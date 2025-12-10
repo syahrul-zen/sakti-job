@@ -4,7 +4,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\UserController;
 use App\Models\Job;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,6 +33,9 @@ Route::controller(AuthController::class)->group(function() {
 
     Route::get('/register-company', 'registerCompany');
     Route::post('/register-company', 'doRegisterCompany');
+
+    Route::get('/register-user', 'registerUser');
+    Route::post('/register-user', 'doRegisterUser');
 
     Route::get('/register-user', 'registerUser');
     Route::post('/register-user', 'doRegisterUser');
@@ -73,5 +78,13 @@ Route::get('/', function() {
         'jobs' => Job::with('company')->where('status', 'published')->latest()->get()
     ]);
 });
+
+Route::get('/test', function() {
+    return view('User.profile', [
+        'user' => User::first()
+    ]);
+});
+
+Route::put('/edit-profile-user/{user}', [UserController::class, 'update']);
 
 Route::get('/lowongan/detail/{job}', [JobController::class, 'show']);

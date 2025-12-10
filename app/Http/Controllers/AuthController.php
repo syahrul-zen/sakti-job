@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
 use illuminate\Support\Facades\Auth;
 
@@ -73,14 +74,6 @@ class AuthController extends Controller
 
             }
 
-            // if ($getData->description && $getData->status = 'pending') {
-            //     return redirect('dashboard-company')->with('swal', [
-            //             'icon'  => 'info',
-            //             'title' => 'Menunggu Verifikasi',
-            //             'text'  => 'Profil perusahaan anda sedang di tinjau oleh admin.'
-            //     ]);
-            // }
-
                 return redirect('dashboard-company')->with('swal', [
                         'icon'  => 'info',
                         'title' => 'Menunggu Verifikasi',
@@ -90,6 +83,25 @@ class AuthController extends Controller
 
         return back()->with('loginFailed', "Login Failed");
         
+    }
+
+    public function registerUser() {
+        return view('Auth.register-user');
+    }
+
+    public function doRegisterUser(Request $request) {
+        $validatedData = $request->validate([
+            'full_name'      => 'required|string|max:200',
+            'phone'          => 'required|string|max:20|unique:users|unique:companies',
+            'email'          => 'required|string|email|max:50|unique:users|unique:companies|unique:admins,email',
+            'password'       => 'required|string|confirmed', 
+            'link_website'   => 'max:255',
+        ]);
+
+        User::create($validatedData);
+
+        return redirect('login')->with('success', 'Berhasil mendaftarkan user, silahkan login');
+
     }
 
     public function logout(Request $request) {

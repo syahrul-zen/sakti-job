@@ -64,8 +64,8 @@
 
                     <div class="text-center mt-5 text-lg">
                         <p class="text-gray-600 fs-6">Tidak Mempunyai akun? <a href="{{ url('register-company') }}"
-                                class="font-bold fs-6">Daftar Perusahaan</a> atau <a
-                                href="{{ url('register-company') }}" class="font-bold fs-6">Daftar User</a>.</p>
+                                class="font-bold fs-6">Daftar Perusahaan</a> atau <a href="{{ url('register-user') }}"
+                                class="font-bold fs-6">Daftar User</a>.</p>
                         <p class="fs-6"><a class="font-bold fs-6" href="auth-forgot-password.html">Lupa Password?</a>.
                         </p>
                     </div>
