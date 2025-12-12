@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Job;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CompanyController extends Controller
@@ -29,14 +31,73 @@ class CompanyController extends Controller
             $dataApplyPending += $job->applyJobs->where('status', 'pending')->count();
         }
 
+        // =============================================================
+
+        // 1. Tentukan rentang 12 bulan terakhir
+        $months = [];
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $monthForLabel = [];
+
+        for ($i = 0; $i < 12; $i++) {
+            $month = $startDate->copy()->addMonths($i);
+            // Kunci untuk Zero-filling: format 'Jan 2024'
+            $months[$month->format('M Y')] = 0;
+            // $monthForLabel[] = $month->format('M');
+        }
+
+        // 2. Kueri menggunakan Query Builder & DB::raw untuk Conditional Aggregation
+        $rawData = Job::query() // Menggunakan `Job::query()` atau `Job::select(...)`
+            // Batasi rentang waktu 12 bulan
+            ->where('created_at', '>=', $startDate->format('Y-m-d H:i:s'))
+            ->where('company_id', $company->id)
+
+            // Kolom SELECT: Gunakan DB::raw untuk Conditional Aggregation dan Date Formatting
+            ->select(
+                // Menghitung status 'draft'
+                DB::raw('COUNT(CASE WHEN status = "draft" THEN id END) as draft_count'),
+                // Menghitung status 'published'
+                DB::raw('COUNT(CASE WHEN status = "published" THEN id END) as published_count'),
+                // Format tanggal untuk pengelompokan
+                DB::raw('DATE_FORMAT(created_at, "%b %Y") as month_year')
+            )
+
+            // Pengelompokan
+            ->groupBy(DB::raw('DATE_FORMAT(created_at, "%b %Y")')) // Group by kolom yang baru dibuat
+
+            // Urutkan berdasarkan bulan
+            ->orderByRaw('MIN(created_at) ASC')
+
+            ->get();
+
+        // 3. Inisialisasi dan Zero-filling (Logika PHP ini tetap sama)
+        $dataJobDraft = $months;
+        $dataJobPublished = $months;
+
+        foreach ($rawData as $data) {
+            $monthKey = $data->month_year;
+
+            if (isset($dataJobDraft[$monthKey])) {
+                $dataJobDraft[$monthKey] = (int) $data->draft_count;
+            }
+            if (isset($dataJobPublished[$monthKey])) {
+                $dataJobPublished[$monthKey] = (int) $data->published_count;
+            }
+        }
+
+        // =============================================================
+
         return view('Company.dashboard',
             [
-                // 'company' => Auth::guard('company')->user(),
                 'dataJobCount' => $dataJob->count(),
                 'dataDraft' => $dataDraft,
                 'dataPublished' => $dataPublished,
                 'dataApplyPending' => $dataApplyPending,
                 'dataJob5Latest' => $dataJob->sortByDesc('created_at')->take(5),
+                'chartData' => [
+                    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    'drafts' => array_values($dataJobDraft),
+                    'published' => array_values($dataJobPublished),
+                ],
             ]);
     }
 

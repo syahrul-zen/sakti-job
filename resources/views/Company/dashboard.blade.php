@@ -57,7 +57,7 @@
             <div class="col-12 col-lg-7">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Statistik Lowongan 6 Bulan</h5>
+                        <h5 class="mb-0">Statistik Lowongan Tahun {{ date("Y") }} </h5>
                     </div>
                     <div class="card-body">
                         <div id="chart-lowongan" style="min-height:280px"></div>
@@ -113,39 +113,38 @@
         </script>
     @endsession
 
-@endsection
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var options = {
-            chart: {
-                type: 'area',
-                height: 300,
-                toolbar: {
-                    show: false
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'smooth'
-            },
-            series: [{
-                    name: 'Published',
-                    data: [5, 6, 7, 8, 9, 8]
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var options = {
+                chart: {
+                    type: 'area',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
                 },
-                {
-                    name: 'Draft',
-                    data: [3, 4, 5, 4, 3, 4]
-                }
-            ],
-            xaxis: {
-                categories: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
-            },
-            colors: ['#198754', '#6c757d']
-        };
-        var chart = new ApexCharts(document.querySelector('#chart-lowongan'), options);
-        chart.render();
-    });
-</script>
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth'
+                },
+                series: [{
+                        name: 'Published',
+                        data: @json($chartData["published"])
+                    },
+                    {
+                        name: 'Draft',
+                        data: @json($chartData["drafts"])
+                    }
+                ],
+                xaxis: {
+                    categories: @json($chartData["labels"])
+                },
+                colors: ['#198754', '#6c757d']
+            };
+            var chart = new ApexCharts(document.querySelector('#chart-lowongan'), options);
+            chart.render();
+        });
+    </script>
+@endsection

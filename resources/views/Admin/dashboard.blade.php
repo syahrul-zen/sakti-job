@@ -83,10 +83,11 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4>Profile Visit</h4>
+                                <h4>Post Job Tahun {{ date("Y") }}</h4>
                             </div>
                             <div class="card-body">
-                                <div id="chart-profile-visit"></div>
+                                {{-- <div id="chart-profile-visit"></div> --}}
+                                <div id="chart-lowongan" style="min-height:280px"></div>
                             </div>
                         </div>
                     </div>
@@ -275,7 +276,6 @@
         <script src="{{ asset("assets/admindash/assets/extensions/sweetalert2/sweetalert2.min.js") }}"></script>
         <script>
             const swalData = @json(session("swal"));
-            console.log("Testing 222");
 
             Swal.fire({
                 icon: swalData.icon,
@@ -285,4 +285,33 @@
             });
         </script>
     @endsession
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var options = {
+                chart: {
+                    type: 'area',
+                    height: 300,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth'
+                },
+                series: [{
+                    name: 'Job Post',
+                    data: @json($chartData["counts"])
+                }, ],
+                xaxis: {
+                    categories: @json($chartData["labels"])
+                },
+                colors: ['#198754', '#6c757d']
+            };
+            var chart = new ApexCharts(document.querySelector('#chart-lowongan'), options);
+            chart.render();
+        });
+    </script>
 @endsection
